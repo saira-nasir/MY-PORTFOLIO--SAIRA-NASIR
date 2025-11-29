@@ -8,6 +8,7 @@ import Education from './components/Education';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
 import ResumeModal from './components/ResumeModal';
+import SideNavigation from './components/SideNavigation';
 import { SoundProvider } from './contexts/SoundContext';
 
 const App: React.FC = () => {
@@ -15,8 +16,9 @@ const App: React.FC = () => {
 
   return (
     <SoundProvider>
-      <div className="bg-cyber-black text-white font-sans antialiased min-h-screen selection:bg-neon-blue selection:text-black">
+      <div className="bg-cyber-black text-white font-sans antialiased min-h-screen selection:bg-neon-blue selection:text-black relative">
         <Header />
+        <SideNavigation />
         <main>
           <Hero />
           <About onOpenResume={() => setIsResumeOpen(true)} />

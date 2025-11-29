@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import SectionWrapper from './SectionWrapper';
 
 interface SkillBadgeProps {
@@ -7,7 +7,7 @@ interface SkillBadgeProps {
 }
 
 const SkillBadge: React.FC<SkillBadgeProps> = ({ name, icon }) => (
-  <div className="flex items-center space-x-3 bg-black/40 border border-gray-800 p-3 rounded hover:border-neon-blue hover:shadow-[0_0_15px_rgba(0,243,255,0.2)] transition-all duration-300 group">
+  <div className="flex items-center space-x-3 bg-black/40 border border-gray-800 p-3 rounded hover:border-neon-blue hover:shadow-[0_0_15px_rgba(0,243,255,0.2)] transition-all duration-300 group relative z-10">
     <div className="text-gray-400 group-hover:text-neon-blue transition-colors duration-300 w-6 h-6">{icon}</div>
     <span className="text-gray-300 font-heading tracking-wide text-sm">{name}</span>
   </div>
@@ -18,18 +18,76 @@ interface SkillCategoryProps {
   skills: { name: string; icon: React.ReactNode }[];
 }
 
-const SkillCategory: React.FC<SkillCategoryProps> = ({ title, skills }) => (
-  <div className="bg-cyber-gray/50 backdrop-blur-sm p-6 border-t-2 border-gray-700 hover:border-neon-blue transition-colors duration-300 relative group">
-    <div className="absolute -top-3 left-4 bg-cyber-black px-2 text-neon-blue font-heading text-xs tracking-widest uppercase border border-gray-800 group-hover:border-neon-blue transition-colors">
-      {title}
+const SkillCategory: React.FC<SkillCategoryProps> = ({ title, skills }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [bgPos, setBgPos] = useState({ x: 50, y: 50 });
+  const [isHovering, setIsHovering] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    setIsHovering(true);
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Calculate 3D rotation based on mouse position
+    // X rotation controls up/down tilt (inverted Y pos)
+    // Y rotation controls left/right tilt (X pos)
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateY = ((x - centerX) / centerX) * 8; // Max 8 degrees tilt
+    const rotateX = ((centerY - y) / centerY) * 8;
+    
+    setRotation({ x: rotateX, y: rotateY });
+    setBgPos({ x: (x / rect.width) * 100, y: (y / rect.height) * 100 });
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+    setRotation({ x: 0, y: 0 });
+    setBgPos({ x: 50, y: 50 });
+  };
+
+  return (
+    <div 
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="bg-cyber-gray/50 backdrop-blur-sm p-6 border-t-2 border-gray-700 hover:border-neon-blue relative group rounded-sm"
+      style={{ 
+        transform: `perspective(1000px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale3d(${isHovering ? 1.02 : 1}, ${isHovering ? 1.02 : 1}, 1)`,
+        transition: isHovering ? 'transform 0.1s ease-out' : 'transform 0.5s ease-out',
+        transformStyle: 'preserve-3d',
+        willChange: 'transform'
+      }}
+    >
+      {/* Holographic Sheen Overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-300 rounded-sm"
+        style={{
+          background: `radial-gradient(circle at ${bgPos.x}% ${bgPos.y}%, rgba(0, 243, 255, 0.1), transparent 60%)`,
+          opacity: isHovering ? 1 : 0,
+          mixBlendMode: 'screen'
+        }}
+      />
+
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-cyber-grid opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none rounded-sm"></div>
+
+      <div className="absolute -top-3 left-4 bg-cyber-black px-2 text-neon-blue font-heading text-xs tracking-widest uppercase border border-gray-800 group-hover:border-neon-blue transition-colors z-20">
+        {title}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 relative z-10 transform-style-3d">
+        {skills.map((skill) => (
+          <SkillBadge key={skill.name} name={skill.name} icon={skill.icon} />
+        ))}
+      </div>
     </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-      {skills.map((skill) => (
-        <SkillBadge key={skill.name} name={skill.name} icon={skill.icon} />
-      ))}
-    </div>
-  </div>
-);
+  );
+};
 
 const Skills: React.FC = () => {
   const skillsData = {

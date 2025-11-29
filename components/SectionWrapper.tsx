@@ -1,4 +1,5 @@
 import React from 'react';
+import DecryptText from './DecryptText';
 
 interface SectionWrapperProps {
   id: string;
@@ -26,7 +27,7 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({ id, title, children, an
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col items-center mb-16">
           <h2 className="text-4xl md:text-5xl font-heading font-bold text-center text-white uppercase tracking-wider mb-2">
-            {title}
+            <DecryptText text={title} />
           </h2>
           <div className="w-24 h-1 bg-neon-blue shadow-[0_0_10px_#00f3ff]"></div>
         </div>

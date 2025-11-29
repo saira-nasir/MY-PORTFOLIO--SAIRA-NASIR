@@ -3,7 +3,7 @@ import { useSound } from '../contexts/SoundContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isSoundEnabled, toggleSound } = useSound();
+  const { isSoundEnabled, toggleSound, playClick } = useSound();
   const [scrollProgress, setScrollProgress] = useState(0);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -16,7 +16,7 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollTop;
+      const totalScroll = document.documentElement.scrollTop || document.body.scrollTop;
       const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       const scroll = windowHeight > 0 ? totalScroll / windowHeight : 0;
       setScrollProgress(scroll);
@@ -32,7 +32,10 @@ const Header: React.FC = () => {
         <div className="px-6 py-4 flex justify-between items-center mix-blend-screen">
           {/* Logo / Home Button */}
           <button 
-            onClick={() => handleScrollTo('home')} 
+            onClick={() => {
+              playClick();
+              handleScrollTo('home');
+            }} 
             className="group focus:outline-none"
             aria-label="Scroll to top"
           >
